@@ -1,0 +1,64 @@
+name: CI/CD Portfolio
+
+# Se déclenche à chaque push sur main
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ================================
+  # Job 1 — Tests et Build
+  # ================================
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Étape 1 — Récupère le code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Étape 2 — Installe Node.js 20
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Étape 3 — Installe les dépendances
+      - name: Install dependencies
+        run: npm install
+
+      # Étape 4 — Vérifie le code (ESLint)
+      - name: Lint code
+        run: npm run lint
+
+      # Étape 5 — Build l'application
+      - name: Build application
+        run: npm run build
+
+      # Étape 6 — Confirme que le build est OK
+      - name: Check build output
+        run: ls dist/
+
+  # ================================
+  # Job 2 — Docker Build
+  # ================================
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t portfolio .
+
+      - name: Test Docker image
+        run: |
+          docker run -d -p 8080:80 --name test-portfolio portfolio
+          sleep 5
+          curl -f http://localhost:8080 || exit 1
+          docker stop test-portfolio
