@@ -30,15 +30,19 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Étape 4 — Vérifie le code (ESLint)
+      # Étape 4 — Lance les tests
+      - name: Run tests
+        run: npm run test
+
+      # Étape 5 — Vérifie le code (ESLint)
       - name: Lint code
         run: npm run lint
 
-      # Étape 5 — Build l'application
+      # Étape 6 — Build l'application
       - name: Build application
         run: npm run build
 
-      # Étape 6 — Confirme que le build est OK
+      # Étape 7 — Confirme que le build est OK
       - name: Check build output
         run: ls dist/
 
